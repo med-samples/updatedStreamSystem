@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width">
+        <title>Peer-to-Peer Cue System --- Reciever</title>
+
+    </head>
+    <body>
+      <h1>Peer-to-Peer System --- Receiver</h1>
+
+        <table class="display">
+            <tr>
+                <td class="title">Status:</td>
+                <td class="title">Messages:</td>
+            </tr>
+            <tr>
+                <td>
+                    <div id="receiver-id" style="font-weight: bold;" title="Copy this ID to the input on send.html.">ID:</div>
+                </td>
+                <td>
+                    <input type="text" id="sendMessageBox" placeholder="Enter a message..." autofocus="true" />
+                    <button type="button" id="sendButton">Send Message</button>
+                    <button type="button" id="clearMsgsButton">Clear Msgs (Local)</button>
+                </td>
+            </tr>
+            <tr>
+                <td><div id="status" class="status"></div></td>
+                <td><div class="message" id="message"></div></td>
+            </tr>
+            <tr>
+                <td> <!-- From the other file-->
+                    <span style="font-weight: bold">ID: </span>
+                    <input type="text" id="sender-id" title="Input the ID from receive.html">
+                    <button id="connect-button">Connect</button>
+                </td><!-- To here -->
+            </tr>
+         <!--
+            <tr>
+                <td class="display-box hidden" id="fade"><h2>Fade</h2></td>
+                <td class="display-box hidden" id="off"><h2>All Off</h2></td>
+            </tr>
+         -->
+        </table>
+        <div id="buttons">
+            <button id="recordButton" >
+              Record
+            </button>
+            <button id="stopButton" disabled>
+                Stop
+            </button>
+            <button id="sendAudioButton" disabled>
+                send
+            </button>
+            <!--for record-->
+            <audio id="preview" ></audio>
+            <!--'controls' use for add
+                play, pause, and volume-->
+            <!-- play the recording-->
+            <audio id="audioPlay" controls></audio>
+        </div>
+        <div id="sentAudio">
+        </div>
+        <div id="vid-trial">
+        </div>
+        <div id="receiver-vid">
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/peerjs@1.2.0/dist/peerjs.min.js"></script>
+        <script src="js/main.js"></script>
+    </body>
+</html>
