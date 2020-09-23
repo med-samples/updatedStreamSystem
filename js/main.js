@@ -393,7 +393,7 @@
       })
 
       //if user leaves, take video and close it
-      call.on('close', () => {
+      conn.on('close', () => {
         video.remove()
       })
 
