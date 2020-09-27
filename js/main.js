@@ -54,6 +54,7 @@
             recvId.innerHTML = "ID: " + peer.id;
             status.innerHTML = "Awaiting connection...";
         });
+
         peer.on('connection', function (c) {
             // Allow only a single connection
             if (conn && conn.open) {
@@ -91,110 +92,30 @@
 
 
     //Get my media (vid and aud) to be able to display to other users
+    const audio = document.querySelector('audio');
     navigator.mediaDevices.getUserMedia({
     video: true,
     audio: true
-    }).then(stream => {
+    })
+    .then(stream => {
     //add the written stream function
     addVideoStream(myVideo, stream)
     //listening when we have call, answering and sending stream
     peer.on('connection', userVideoStream => {
-      console.log('calling');
-      connectToNewUser(video, stream)
-  //    addVideoStream(myVideo, userVideoStream)
-
-      //give & create stream to other user
+        console.log('calling');
+        connectToNewUser(video, stream)
+        const audioTracks = stream.getAudioTracks();
+        console.log('Using audio device: ' + audioTracks[0].label);
+        window.stream = stream; // make variable available to browser console
+        audio.srcObject = stream;
 
     })
 
-    /*
-    //allow others to view me using socket
-    socket.on('user-connected', userId => {
-        //use a function to all user to view me
-        connectToNewUser(userId, stream)
-    })
-*/
 
     // links audio with audio tag
     let audio = document.querySelector('audio');
 
-    // case check for older browsers
-    if ("srcObject" in audio) {
-        audio.srcObject = stream;
-    }
-    else {   // Old version
-        audio.src = window.URL
-        .createObjectURL(stream);
-    }
-
-    audio.onloadedmetadata = function (ev) {
-
-        // Play the audio in the 2nd audio
-        // element what is being recorded
-        //audio.play();
-    };
-
-
-    // Start record
-    let record = document.getElementById('recordButton');
-
-    // stop record
-    let stop = document.getElementById('stopButton');
-
-    // audio tag to play the record
-    let playAudio = document.getElementById('audioPlay');
-
-    // API to record audio, 'MediaRecorder'
-    let mediaRecorder = new MediaRecorder(stream);
-
-    // Event portion
-
-    // Start event
-    record.addEventListener('click', function (e) {
-        record.disabled = true;
-        stop.disabled = false;
-        sendAudioButton.disabled = true;
-        mediaRecorder.start();
-
-        console.log("start");
-    });
-
-    // Stop event
-    stop.addEventListener('click', function (e){
-        record.disabled = false;
-        stop.disabled = true;
-        sendAudioButton.disabled = false;
-        mediaRecorder.stop();
-        //console.log("stop");
-    });
-    // Chunk array to store the audio data
-    let dataArray = [];
-
-    // If audio data available then push
-    // it to the chunk array
-    mediaRecorder.ondataavailable = function (ev) {
-        dataArray.push(ev.data);
-        }
-    // Convert the audio data in to blob
-    // after stopping the recording
-    mediaRecorder.onstop = function (ev) {
-        // blob of type mp3
-        let blob = new Blob(dataArray,
-                { 'type': 'audio/mp3;' });
-
-
-        // After fill up the chunk
-        // emptys array after converting blob
-        dataArray = [];
-
-        // Creating audio url with reference
-        // of created blob named 'blob'
-        let audioSrc = window.URL.createObjectURL(blob);
-
-        blobGlobal = audioSrc;
-        // Pass the audio url to the 2nd video tag
-        playAudio.src = audioSrc;
-    }
+   
     })
     .catch(function(err){
     console.log(`Error: ${err}`);
@@ -207,56 +128,37 @@
      * connection and data received on it.
      */
      function join() {
-         console.log("i was pressed");
         // Close old connection
         if (conn) {
             conn.close();
-            console.log("If statment closed");
         }
 
+        // when the connect button is pressed get the video and audio and call connectToNewUser()
+        const audio = document.querySelector('audio');
+        navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: true
+        })
+        .then(stream => {connectToNewUser(video, stream)})
+        .catch();
+        
         // Create connection to destination peer specified in the input field
         conn = peer.connect(recvIdInput.value, {
             reliable: true
         });
 
-        console.log("conn:" + recvIdInput.value);
-
         conn.on('open', function () {
-            status.innerHTML = "I Connected to: " + conn.peer;
-            console.log("I Connected to: " + conn.peer);
-            //give & create stream to other user
-            //const video = document.createElement('video')
-            //conn.on('connection', userVideoStream => {
-          //    addVideoStream(video, userVideoStream)
-          //  })
-
-            // Check URL params for comamnds that should be sent immediately
-           // var command = getUrlParam("command");
-           // if (command)
-           //     conn.send(command);
+            status.innerHTML = "Connected to: " + conn.peer;
+            console.log("Connected to: " + conn.peer);
         });
+
+
         // Handle incoming data (messages only since this is the signal sender)
         conn.on('data', function (data) {
-            //addAudio(data);
-            console.log(data);
-            addMessage("<span class=\"peerMsg\">Peer 2: </span>" + data);
-
-            // Amy's switch case
-            /*
-            switch(data) {
-                case 'Message' :
-                    addMessage("<span class=\"peerMsg\">Peer 1: </span>" + data)
-                    break;
-                case 'Audio' :
-                    addAudio(data);
-                    break;
-                default:
-                    console.log('Default switch case 1 ' + data)
-                    break;
-            }
-            */
+            console.log('received:',data);
+            addMessage("<span class=\"peerMsg\">Peer:</span> " + data);
         });
-
+        
         conn.on('close', function () {
             status.innerHTML = "Connection closed";
         });
@@ -269,25 +171,7 @@
     function ready() {
         conn.on('data', function (data) {
             console.log("Data recieved");
-            addMessage("<span class=\"peerMsg\">Peer 2: </span>" + data);
-
-            // Amy's switch case
-            /*
-            switch(data) {
-                case 'Message' :
-                    addMessage("<span class=\"peerMsg\">Peer 2: </span>" + data)
-                    break;
-                case 'Audio' :
-                    addAudio(data);
-                    break;
-                default:
-                    console.log('Default switch case 2 ' + data)
-                    break;
-            }
-            */
-           // addAudio(audioData);
-           // addMessage("<span class=\"peerMsg\">Peer2: </span>" + data);
-            // this is where they should receive the audio
+            addMessage("<span class=\"peerMsg\">Peer 2: </span>" + data)
         });
 
         conn.on('close', function () {
@@ -315,11 +199,6 @@
         };
 
         message.innerHTML = "<br><span class=\"msg-time\">" + h + ":" + m + ":" + s + "</span>  -  " + msg + message.innerHTML;
-    }
-
-    function addAudio(aud) {
-        sentAudio.innerHTML ="<br> <audio controls src=" + aud + "> </audio> " + sentAudio.innerHTML;
-        console.log(aud);
     }
 
     function clearMessages() {
@@ -350,7 +229,6 @@
             sendMessageBox.value = "";
             // for peer
             conn.send(msg);
-          //console.log("Sent: " + aud);
             // for self
             addMessage("<span class=\"selfMsg\">Self: </span>" + msg);
           //signal('Message')
@@ -359,20 +237,6 @@
         }
     });
 
-    sendAudioButton.addEventListener('click', function () {
-        if (conn && conn.open) {
-            var aud = blobGlobal;
-            //for peer
-            conn.send(aud);
-           console.log("Sent: " + aud);
-            //for self
-            addAudio(aud);
-
-        } else {
-            console.log('Connection is closed');
-        }
-        signal('Audio')
-    })
 
   //creating function to allow user to view me
   function connectToNewUser(video, stream) {
@@ -386,7 +250,7 @@
       console.log('Connection test: ' + c)
       const call = peer.call(c, stream)
       //take the stream and add to custom element
-      call.on('connection', userVideoStream => {
+      peer.on('call', userVideoStream => {
         addVideoStream(video, userVideoStream)
         //videoTrial.append(video)
         console.log('video streaming')
@@ -401,7 +265,7 @@
     //  peer[c] = call
   }
 
-    //creating function to stream my media mediaDevices
+    //creating function to stream myself
     function addVideoStream(myVideo, stream) {
     myVideo.srcObject = stream
     //once the video loads, play the video
